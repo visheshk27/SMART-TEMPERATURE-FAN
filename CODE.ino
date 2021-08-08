@@ -1,91 +1,86 @@
-#include <IRremote.h>
-int receiver = 12;
-IRrecv irrcev(receiver);
-decode_results results;
-void setup()
-{
-  pinMode(6, OUTPUT);
-  pinMode(5, OUTPUT);
-  pinMode(3, OUTPUT);
-  pinMode(2, OUTPUT);
-  irrcev.enableIRIn();
+// Declare all the pins 
+int temp = A0;
+int greenLed = 2;
+int redLed = 4;
+int fan = 7;
+int buzzer = 8;
+
+int thresholdValue = 0;
+int celsius = 0;
+int fahrenheit = 0;
+
+// Functions for various work
+void greenLightOn(){
+	digitalWrite(greenLed, HIGH);
+}
+void greenLightOff(){
+	digitalWrite(greenLed, LOW);
+}
+void redLightOn(){
+	digitalWrite(redLed, HIGH);
+}
+void redLightOff(){
+	digitalWrite(redLed, LOW);
+}
+void fanOn(){
+	digitalWrite(fan, HIGH);
+}
+void fanOff(){
+	digitalWrite(fan, LOW);
+}
+void buzzerOn(){
+	digitalWrite(buzzer, HIGH);
+}
+void buzzerOff(){
+	digitalWrite(buzzer, LOW);
 }
 
-void loop()
+void setup()
 {
- if(irrcev.decode(&results))
- {
-   irrcev.resume();
- }
-  if(results.value == 16613503)
-  {
-    move_forward();
+  pinMode(redLed, OUTPUT);
+  pinMode(greenLed, OUTPUT);
+  pinMode(fan, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+  pinMode(temp, INPUT);
+  Serial.begin(9600);
+}
+
+void loop(){
+  
+  // Temperature calculation
+  celsius = map(((analogRead(A0) - 20) * 3.04), 0, 1023, -40, 125);
+  fahrenheit = ((celsius * 9) / 5 + 32);
+  
+  Serial.print(celsius);
+  Serial.print(" C : ");
+  Serial.print(fahrenheit);
+  Serial.println(" F");
+  
+  if( celsius<= 30){
+    greenLightOn();
+    redLightOff();
+    fanOff();
+    buzzerOff();
+    //Serial.println("green light on");
   }
-  if(irrcev.decode(&results))
- {
-   irrcev.resume();
- }
- if(results.value == 16621663)
-  {
-    stop();
+  else if(celsius >= 31 && celsius <= 40){
+    greenLightOff();
+    fanOff();
+    buzzerOff();
+    redLightOn();
+    //Serial.println("red light on");
   }
-  if(irrcev.decode(&results))
- {
-   irrcev.resume();
- }
-   if(results.value == 16617583)
-  {
-    move_back();
+  else if(celsius > 40){
+    redLightOn();
+    fanOn();
+    buzzerOn();
+    greenLightOff();
+    
+    //Serial.println("Red Light On | Fan on");
   }
- if(irrcev.decode(&results))
- {
-   irrcev.resume();
- }
- if(results.value == 16589023)
-  {
-    turn_left();
+  else{
+  	Serial.println("Temperature is Normal");
   }
-  if(irrcev.decode(&results))
- {
-   irrcev.resume();
- }
- if(results.value == 16605343)
-  {
-    turn_right();
-  }
+  delay(1000);
 }
-void move_forward()
-{
-  digitalWrite(5, LOW);
-  digitalWrite(2, LOW);
-  digitalWrite(6, HIGH);
-  digitalWrite(3, HIGH);
-}
-void turn_right()
-{
-  digitalWrite(5, LOW);
-  digitalWrite(3, LOW);
-  digitalWrite(2, LOW);
-  digitalWrite(6, HIGH);
-}
-void turn_left()
-{
-  digitalWrite(5, LOW);
-  digitalWrite(6, LOW);
-  digitalWrite(2, LOW);
-  digitalWrite(3, HIGH);
-}
-void move_back()
-{
-  digitalWrite(6, LOW);
-  digitalWrite(3, LOW);
-  digitalWrite(5, HIGH);
-  digitalWrite(2, HIGH);
-}
-void stop()
-{
-  digitalWrite(5, LOW);
-  digitalWrite(2, LOW);
-  digitalWrite(6, LOW);
-  digitalWrite(3, LOW);
-}
+
